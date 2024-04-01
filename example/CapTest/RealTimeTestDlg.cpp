@@ -8,7 +8,7 @@
 #include "convert.h"
 #include "Ini.h"
 #include <io.h>
-
+#include <direct.h>
 #include <seeta/GenderPredictor.h>
 #include <seeta/AgePredictor.h>
 #include <seeta/EyeStateDetector.h>
@@ -66,10 +66,6 @@ public:
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
-
-// 实现
-protected:
-	DECLARE_MESSAGE_MAP()
 };
 
 CAboutDlg::CAboutDlg() : CDialogEx(IDD_ABOUTBOX)
@@ -81,13 +77,11 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 	CDialogEx::DoDataExchange(pDX);
 }
 
-BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
-END_MESSAGE_MAP()
-
 
 // CRealTimeTestDlg 对话框
 CRealTimeTestDlg::CRealTimeTestDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_REALTIMETEST_DIALOG, pParent)
+	, m_szFaceName(_T(""))
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	std::string path = GetIniStr("Model", "Dir", "sf3.0_models");
@@ -118,7 +112,6 @@ CRealTimeTestDlg::CRealTimeTestDlg(CWnd* pParent /*=NULL*/)
 			//face_detector->SetImagePyramidScaleFactor(GetIniFloat(SK_FACEDECT, "ImagePyramidScaleFactor", 0.8));
 			//face_detector->SetWindowStep(GetIniInt(SK_FACEDECT, "StepX", 4), GetIniInt(SK_FACEDECT, "StepY", 4));
 		}
-		
 
 		seeta::ModelSetting gb_setting(path + "gender_predictor.csta");
 		seeta::GenderPredictor GP(gb_setting);
@@ -159,7 +152,9 @@ void CRealTimeTestDlg::DoDataExchange(CDataExchange* pDX)
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_COMBO_DEVICES, m_cbDevices);
 	DDX_Control(pDX, IDC_COMBO_CHECKTYPE, m_cbCheckType);
-	DDX_Control(pDX, IDC_CHECK_BEAUTIFUL, m_btnBeatiful);
+	DDX_Control(pDX, IDC_LIST_FACE, m_lFaces);
+	DDX_Text(pDX, IDC_EDIT_FACE_NAME, m_szFaceName);
+	DDX_Control(pDX, IDC_STATIC_FACE, m_imgFace);
 }
 
 BEGIN_MESSAGE_MAP(CRealTimeTestDlg, CDialogEx)
@@ -168,6 +163,9 @@ BEGIN_MESSAGE_MAP(CRealTimeTestDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_BUTTON_START_PREV, &CRealTimeTestDlg::OnBnClickedButtonStartPrev)
 	ON_BN_CLICKED(IDC_BUTTON_RESET, &CRealTimeTestDlg::OnBnClickedButtonReset)
+	ON_BN_CLICKED(IDC_BUTTON_ADD_FACE, &CRealTimeTestDlg::OnBnClickedButtonAddFace)
+	ON_BN_CLICKED(IDC_BUTTON_DEL_FACE, &CRealTimeTestDlg::OnBnClickedButtonDelFace)
+	ON_LBN_SELCHANGE(IDC_LIST_FACE, &CRealTimeTestDlg::OnLbnSelchangeListFace)
 END_MESSAGE_MAP()
 
 
@@ -290,11 +288,15 @@ void CRealTimeTestDlg::OnRgbData(BYTE* pRgb, int width, int height)
 	if (m_engine) {
 		seeta::ImageData img_data;
 		// yuv通道数据
-		img_data.data = pyuv;
 		img_data.width = width;
 		img_data.height = height;
+#if 1
+		img_data.channels = 3;
+		img_data.data = pRgb;// -(height - 1) * width * 3;
+#else
 		img_data.channels = 1;
-
+		img_data.data = pyuv;
+#endif
 
 		auto faces = m_engine->DetectFaces(img_data);
 		m_draw.rects.resize(faces.size());
@@ -307,6 +309,14 @@ void CRealTimeTestDlg::OnRgbData(BYTE* pRgb, int width, int height)
 			for (int i = 0; i < points.size(); i++) {
 				POINT pt{ points[i].x, points[i].y };
 				m_draw.mapPoints[RGB(255, 0, 0)].push_back(pt);
+			}
+			if (i == 0) {
+				auto fdb = &m_engine->FDB;
+				if (!m_crop) {
+					m_crop.reset(new seeta::ImageData(fdb->GetCropFaceWidthV2(), fdb->GetCropFaceHeightV2(), fdb->GetCropFaceChannelsV2()));
+				}
+				fdb->CropFaceV2(img_data, &points[0], *m_crop);
+				m_imgFace.SetRGB(m_crop->data, m_crop->width, m_crop->height);
 			}
 		}
 	}
@@ -334,8 +344,9 @@ void CRealTimeTestDlg::OnBnClickedButtonStartPrev()
 		m_capture.SetCallBack(&VideCallBack, this);
 		HWND hVideo = NULL;
 		GetDlgItem(IDC_VIDEO, &hVideo);
-		m_capture.Start(m_cbDevices.GetCurSel(), NULL);// hVideo);
 		m_draw.Init(hVideo);
+
+		m_capture.Start(m_cbDevices.GetCurSel(), NULL);// hVideo);
 		m_nFrame = 0;
 		strfps[0] = 0;
 		m_tick = GetTickCount();
@@ -346,4 +357,63 @@ void CRealTimeTestDlg::OnBnClickedButtonStartPrev()
 
 void CRealTimeTestDlg::OnBnClickedButtonReset() {
 	// TODO: 在此添加控件通知处理程序代码
+}
+
+#ifndef S_ISDIR
+#define S_ISDIR(X) ((X) & _S_IFDIR)
+#endif
+
+std::string GetFaceFile(int64_t data) {
+	std::string sRet = "faces/";
+	struct stat fileStat;
+	if ((stat(sRet.c_str(), &fileStat) == 0) && S_ISDIR(fileStat.st_mode))
+	{
+		// exist = true;
+	}
+	else {
+		mkdir(sRet.c_str());
+	}
+	return sRet + std::to_string(data) + ".bmp";
+}
+
+void CRealTimeTestDlg::OnBnClickedButtonAddFace()
+{
+	UpdateData();
+	if (m_szFaceName.GetLength() && m_engine && m_crop) {
+		
+		int idx = m_lFaces.FindString(0, m_szFaceName);
+		if (idx == -1) {
+			idx = m_lFaces.AddString(m_szFaceName);
+			int64_t data = m_engine->Register(*m_crop);
+			m_lFaces.SetItemData(idx, data);
+			m_imgFace.SaveImage(GetFaceFile(data).c_str());
+		}
+		m_lFaces.SetCurSel(idx);
+	}
+}
+
+
+void CRealTimeTestDlg::OnBnClickedButtonDelFace()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	int sel = m_lFaces.GetCurSel();
+	if (sel != -1) {
+		int64_t data = m_lFaces.GetItemData(sel);
+		if (m_engine)
+			m_engine->Delete(data);
+		remove(GetFaceFile(data).c_str());
+		m_lFaces.DeleteString(sel);
+	}
+}
+
+
+void CRealTimeTestDlg::OnLbnSelchangeListFace()
+{
+	int sel = m_lFaces.GetCurSel();
+	if (sel != -1) {
+		m_lFaces.GetText(sel, m_szFaceName);
+		int64_t data = m_lFaces.GetItemData(sel);
+		m_imgFace.SetImage(GetFaceFile(data).c_str());
+		UpdateData(FALSE);
+	}
 }

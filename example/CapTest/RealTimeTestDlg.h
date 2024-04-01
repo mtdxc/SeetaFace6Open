@@ -8,6 +8,7 @@
 #include "CaptureVideo.h"
 #include "DrawVideo.h"
 #include "FaceEngine.h"
+#include "CImageStatic.h"
 #include <memory>
 // CRealTimeTestDlg 对话框
 class CRealTimeTestDlg : public CDialogEx
@@ -33,8 +34,9 @@ protected:
 	CCaptureVideo m_capture;
 	CDrawVideo m_draw;
 	std::unique_ptr<seeta::FaceEngine> m_engine;
-
+	std::unique_ptr<seeta::ImageData> m_crop;
 	std::string yuv;
+
 	// 生成的消息映射函数
 	virtual BOOL OnInitDialog();
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
@@ -47,5 +49,11 @@ public:
 
 	CComboBox m_cbDevices;
 	CComboBox m_cbCheckType;
-	CButton m_btnBeatiful;
+	CListBox m_lFaces;
+	CString m_szFaceName;
+	CImageStatic m_imgFace;
+
+	afx_msg void OnBnClickedButtonAddFace();
+	afx_msg void OnBnClickedButtonDelFace();
+	afx_msg void OnLbnSelchangeListFace();
 };

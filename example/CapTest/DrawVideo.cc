@@ -88,9 +88,9 @@ void CDrawVideo::Draw(BYTE *pBuffer,int width, int height, LPCTSTR szText)
 
 	}
 	// m_desRect.top = m_desRect.bottom - 20;
-	if(szText && szText[0]){
+	if(szText && szText[0]) {
 		if(1)//GetIniInt("View", "TransText", 0))
-	{
+		{
 			SetBkMode(hDC, TRANSPARENT);
 			SetTextColor(hDC, 0xffffff);
 		}

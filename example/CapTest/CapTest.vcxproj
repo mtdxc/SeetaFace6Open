@@ -201,6 +201,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CaptureVideo.h" />
+    <ClInclude Include="CImageStatic.h" />
     <ClInclude Include="convert.h" />
     <ClInclude Include="DrawVideo.h" />
     <ClInclude Include="FaceEngine.h" />
@@ -213,6 +214,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CaptureVideo.cpp" />
+    <ClCompile Include="CImageStatic.cpp" />
     <ClCompile Include="convert.cpp" />
     <ClCompile Include="DrawVideo.cc" />
     <ClCompile Include="Ini.cpp" />
