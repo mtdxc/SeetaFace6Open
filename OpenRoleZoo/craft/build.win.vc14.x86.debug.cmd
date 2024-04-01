@@ -20,12 +20,12 @@ cd "%BUILD_DIR%"
 md "%INSTALL_DIR%"
 
 cmake "%~dp0.." ^
--G"NMake Makefiles JOM" ^
+-G"Ninja" ^
 -DCMAKE_BUILD_TYPE="%BUILD_TYPE%" ^
 -DPLATFORM="%PLATFORM_TARGET%" ^
 -DORZ_WITH_OPENSSL="%WITH_SSL%" ^
 -DCMAKE_INSTALL_PREFIX="%INSTALL_DIR%"
 
-jom -j16 install
+cmake --build . && cmake --install .
 
 exit /b

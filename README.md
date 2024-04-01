@@ -61,7 +61,7 @@ git clone --recursive https://github.com/SeetaFace6Open/index.git
         GCC 或者 Clang 编译器
 3. For windows<br>
         [MSVC](https://visualstudio.microsoft.com/zh-hans/) 或者 MinGW. <br>
-        [jom](https://wiki.qt.io/Jom)
+        [Ninja](https://ninja-build.org/)
 4. [CMake](http://www.cmake.org/)
 5. 依赖架构<br>
  CPU 支持 AVX 和 FMA [可选]（x86）或 NENO（ARM）支持

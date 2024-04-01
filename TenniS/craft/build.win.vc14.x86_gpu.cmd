@@ -20,7 +20,7 @@ cd "%BUILD_DIR%"
 md "%INSTALL_DIR%"
 
 cmake "%~dp0.." ^
--G"NMake Makefiles JOM" ^
+-G"Ninja" ^
 -DCMAKE_BUILD_TYPE="%BUILD_TYPE%" ^
 -DCONFIGURATION="%BUILD_TYPE%" ^
 -DPLATFORM="%PLATFORM_TARGET%" ^
@@ -32,7 +32,7 @@ cmake "%~dp0.." ^
 -DTS_USE_SIMD=ON ^
 -DTS_ON_HASWELL=ON
 
-jom -j16 install
+cmake --build . && cmake --install .
 
 exit /b
 
