@@ -16,10 +16,22 @@ for %%d in (%modules%) do (
     popd
 )
 
+for %%d in (%modules%) do (
+    pushd %%d\craft
+    call build.win.vc14.x64.debug.cmd
+    popd
+)
+
 call %vcvarsall_bin% x86
 
 for %%d in (%modules%) do (
     pushd %%d\craft
     call build.win.vc14.x86.cmd
+    popd
+)
+
+for %%d in (%modules%) do (
+    pushd %%d\craft
+    call build.win.vc14.x86.debug.cmd
     popd
 )

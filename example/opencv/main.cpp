@@ -12,7 +12,22 @@
 
 #pragma comment(lib, "opencv_world490.lib")
 #pragma comment(lib, "opencv_img_hash490.lib")
+#ifdef _DEBUG
+//release 库,11个
+#pragma comment(lib,"SeetaFaceDetector600d.lib") 
+#pragma comment(lib,"SeetaFaceLandmarker600d.lib")
 
+#pragma comment(lib,"SeetaFaceRecognizer610d.lib")
+#pragma comment(lib,"SeetaGenderPredictor600d.lib") 
+#pragma comment(lib,"SeetaAgePredictor600d.lib") 
+#pragma comment(lib,"SeetaFaceAntiSpoofingX600d.lib") 
+#pragma comment(lib,"SeetaEyeStateDetector200d.lib")
+
+//这四个没用到
+#pragma comment(lib,"SeetaMaskDetector200d.lib")
+#pragma comment(lib,"SeetaFaceTracking600d.lib") 
+#pragma comment(lib,"SeetaPoseEstimation600d.lib")
+#else
 //release 库,11个
 #pragma comment(lib,"SeetaFaceDetector600.lib") 
 #pragma comment(lib,"SeetaFaceLandmarker600.lib")
@@ -28,6 +43,7 @@
 #pragma comment(lib,"SeetaFaceTracking600.lib") 
 #pragma comment(lib,"SeetaPoseEstimation600.lib")
 #pragma comment(lib,"SeetaQualityAssessor300.lib")
+#endif
 
 using namespace seeta;
 using namespace std;

@@ -13,6 +13,22 @@
 #include <seeta/AgePredictor.h>
 #include <seeta/EyeStateDetector.h>
 #include <seeta/FaceAntiSpoofing.h>
+#ifdef _DEBUG
+//release 库,11个
+#pragma comment(lib,"SeetaFaceDetector600d.lib") 
+#pragma comment(lib,"SeetaFaceLandmarker600d.lib")
+
+#pragma comment(lib,"SeetaFaceRecognizer610d.lib")
+#pragma comment(lib,"SeetaGenderPredictor600d.lib") 
+#pragma comment(lib,"SeetaAgePredictor600d.lib") 
+#pragma comment(lib,"SeetaFaceAntiSpoofingX600d.lib") 
+#pragma comment(lib,"SeetaEyeStateDetector200d.lib")
+
+//这四个没用到
+#pragma comment(lib,"SeetaMaskDetector200d.lib")
+#pragma comment(lib,"SeetaFaceTracking600d.lib") 
+#pragma comment(lib,"SeetaPoseEstimation600d.lib")
+#else
 //release 库,11个
 #pragma comment(lib,"SeetaFaceDetector600.lib") 
 #pragma comment(lib,"SeetaFaceLandmarker600.lib")
@@ -28,7 +44,7 @@
 #pragma comment(lib,"SeetaFaceTracking600.lib") 
 #pragma comment(lib,"SeetaPoseEstimation600.lib")
 //#pragma comment(lib,"SeetaQualityAssessor300.lib")
-
+#endif
 #define SK_FACEDECT "FaceDetect"
 #define SK_FACETRACKER "FaceTracker"
 
@@ -114,15 +130,15 @@ CRealTimeTestDlg::CRealTimeTestDlg(CWnd* pParent /*=NULL*/)
 		//6.眼睛状态模型初始化
 		seeta::ModelSetting setting;
 		setting.append(path + "eye_state.csta");
-		//seeta::EyeStateDetector EBD(setting);
+		seeta::EyeStateDetector EBD(setting);
 
 		//7.活体检测模型初始化
 		seeta::ModelSetting anti_setting;
 		anti_setting.append(path + "fas_first.csta");
 		anti_setting.append(path + "fas_second.csta");
-		//seeta::FaceAntiSpoofing FAS(anti_setting);
-		//FAS.SetThreshold(0.3, 0.90);//设置默认阈值，另外一组阈值为(0.7, 0.55)
-		//FAS.SetBoxThresh(0.9);
+		seeta::FaceAntiSpoofing FAS(anti_setting);
+		FAS.SetThreshold(0.3, 0.90);//设置默认阈值，另外一组阈值为(0.7, 0.55)
+		FAS.SetBoxThresh(0.9);
 	}
 	}
 	catch (std::exception e) {
@@ -133,6 +149,9 @@ CRealTimeTestDlg::CRealTimeTestDlg(CWnd* pParent /*=NULL*/)
 
 CRealTimeTestDlg::~CRealTimeTestDlg()
 {
+	if (m_capture.started()) {
+		m_capture.Stop();
+	}
 }
 
 void CRealTimeTestDlg::DoDataExchange(CDataExchange* pDX)
