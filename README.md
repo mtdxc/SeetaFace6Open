@@ -57,17 +57,17 @@ git clone --recursive https://github.com/SeetaFace6Open/index.git
  
 1. 编译工具
 2. For linux<br>
-        GNU Make 工具<br>
-        GCC 或者 Clang 编译器
+   - GNU Make 工具<br>
+   - GCC 或者 Clang 编译器
 3. For windows<br>
-        [MSVC](https://visualstudio.microsoft.com/zh-hans/) 或者 MinGW. <br>
-        [Ninja](https://ninja-build.org/)
+   - [MSVC](https://visualstudio.microsoft.com/zh-hans/) 或者 MinGW. <br>
+   - [Ninja](https://ninja-build.org/)
 4. [CMake](http://www.cmake.org/)
 5. 依赖架构<br>
- CPU 支持 AVX 和 FMA [可选]（x86）或 NENO（ARM）支持
+   - CPU 支持 AVX 和 FMA [可选]（x86）或 NENO（ARM）支持
 
 ### 编译顺序说明
-OpenRoleZoo 为常用操作的集合，SeetaAuthorize  为模型解析工程，TenniS 为前向计算框架。需要重点说明的是，此次 TenniS 同时放出了 **GPU** 计算源码，可以编译出 **GPU** 版本进行使用。上述三个模块为基础模块，各个 SDK 的编译均依赖上述模块，因此需要优先编译出 OpenRoleZoo, SeetaAuthorize 和 TenniS，然后再进行其他 SDK 模块的编译。
+OpenRoleZoo 为常用操作的集合，SeetaAuthorize 为模型解析工程，TenniS 为前向计算框架。需要重点说明的是，此次 TenniS 同时放出了 **GPU** 计算源码，可以编译出 **GPU** 版本进行使用。上述三个模块为基础模块，各个 SDK 的编译均依赖上述模块，因此需要优先编译出 OpenRoleZoo, SeetaAuthorize 和 TenniS，然后再进行其他 SDK 模块的编译。
 
 ### 各平台编译
 
@@ -94,6 +94,7 @@ OpenRoleZoo 为常用操作的集合，SeetaAuthorize  为模型解析工程，T
 
 #### 其他 arm 等交叉编译平台
 当前版本并未直接对交叉编译平台进行支持， 不过可参考文章 [cmake cross compile](https://zhuanlan.zhihu.com/p/100367053) 的说明进行 CMake 配置和对应平台的编译。 
+
 # 下载地址
 
 ### 百度网盘
@@ -109,7 +110,7 @@ Part II: [Download](https://www.dropbox.com/s/d296i7efnz5evbx/face_recognizer_li
 # 使用入门
 
 关于基本的接口使用，请参见教程：
-[《SeetaFace 入门教程》](http://leanote.com/blog/post/5e7d6cecab64412ae60016ef)，github上有同步[文档源码](https://github.com/seetafaceengine/SeetaFaceTutorial)。
+[《SeetaFace 入门教程》](Tutorial.md)，github上有同步[文档源码](https://github.com/seetafaceengine/SeetaFaceTutorial)。
 
 人脸识别的完整示例Demo见 [example/qt](./example/qt)。
 
