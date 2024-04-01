@@ -95,6 +95,8 @@ CRealTimeTestDlg::CRealTimeTestDlg(CWnd* pParent /*=NULL*/)
 		seeta::ModelSetting PD_model(path + "face_landmarker_pts5.csta", device, id);
 		seeta::ModelSetting FR_model(path + "face_recognizer.csta", device, id);
 		m_engine.reset(new seeta::FaceEngine(FD_model, PD_model, FR_model, 2, 16));
+		seeta::ModelSetting model2(path + "face_landmarker_pts68.csta", device, id);
+		m_fd68.reset(new seeta::FaceLandmarker(model2));
 	    /*
 		* Set minimum and maximum size of faces to detect (Default: 20, Not Limited)
 		- `face_detector.SetMinFaceSize(size);`
@@ -306,10 +308,6 @@ void CRealTimeTestDlg::OnRgbData(BYTE* pRgb, int width, int height)
 				faces[i].pos.x + faces[i].pos.width, faces[i].pos.y + faces[i].pos.height };
 
 			auto points = m_engine->DetectPoints(img_data, faces[i].pos);
-			for (int i = 0; i < points.size(); i++) {
-				POINT pt{ points[i].x, points[i].y };
-				m_draw.mapPoints[RGB(255, 0, 0)].push_back(pt);
-			}
 			if (i == 0) {
 				auto fdb = &m_engine->FDB;
 				if (!m_crop) {
@@ -317,6 +315,14 @@ void CRealTimeTestDlg::OnRgbData(BYTE* pRgb, int width, int height)
 				}
 				fdb->CropFaceV2(img_data, &points[0], *m_crop);
 				m_imgFace.SetRGB(m_crop->data, m_crop->width, m_crop->height);
+			}
+
+			if (m_fd68) {
+				points = m_fd68->mark(img_data, faces[i].pos);
+			}
+			for (int i = 0; i < points.size(); i++) {
+				POINT pt{ points[i].x, points[i].y };
+				m_draw.mapPoints[RGB(255, 0, 0)].push_back(pt);
 			}
 		}
 	}

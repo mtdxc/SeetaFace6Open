@@ -34,6 +34,7 @@ protected:
 	CCaptureVideo m_capture;
 	CDrawVideo m_draw;
 	std::unique_ptr<seeta::FaceEngine> m_engine;
+	std::unique_ptr<seeta::FaceLandmarker> m_fd68;
 	std::unique_ptr<seeta::ImageData> m_crop;
 	std::string yuv;
 
