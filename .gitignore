@@ -1,0 +1,5 @@
+build
+build.win.vc14.*
+lib
+Debug
+Release
