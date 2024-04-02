@@ -14,11 +14,14 @@ struct AntiSpoofing {
     int status;
     float clarity = 0, reality = 0;
 };
+struct DbInfo {
+    std::string name;
+    float score = 0;
+};
 struct FaceInfo : public SeetaFaceInfo {
     using Ptr = std::shared_ptr<FaceInfo>;
-    FaceInfo(const SeetaFaceInfo& fi) { *this = fi; }
-    std::string name;
-    float name_score = 0;
+    FaceInfo(const SeetaFaceInfo& fi) : SeetaFaceInfo(fi){}
+    DbInfo db;
     // 5µ„–≈œ¢
     std::vector<SeetaPointF> points;
     std::shared_ptr<int> age;
@@ -28,6 +31,8 @@ struct FaceInfo : public SeetaFaceInfo {
     std::shared_ptr<AntiSpoofing> anti;
     std::shared_ptr<std::pair<int, int>> eye;
     std::shared_ptr<seeta::ImageData> img;
+    seeta::ImageData crop;
+    int cmpCrop(int width, int height, int channel);
 };
 
 class FaceEngine2 {
@@ -44,6 +49,7 @@ class FaceEngine2 {
 public:
     FaceEngine2() {}
     bool init(const char* dir, const char* fr_model = "face_recognizer.csta");
+    const char* model_dir() const { return model_dir_.c_str(); }
     bool addFaceDb(const char* name, const SeetaImageData& data);
     bool addFaceDb(const char* name, void* rgb, int width, int height);
     bool delFaceDb(const char* name);
@@ -53,7 +59,7 @@ public:
     int face_size() const { return faces_.size(); }
     FaceInfo::Ptr get(int pos) {
         FaceInfo::Ptr ret = nullptr;
-        if (pos > 0 && pos < faces_.size())
+        if (pos >= 0 && pos < faces_.size())
             ret = faces_[pos];
         return ret;
     }

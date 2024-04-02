@@ -7,9 +7,10 @@
 #include <string>
 #include "CaptureVideo.h"
 #include "DrawVideo.h"
-#include "FaceEngine.h"
 #include "CImageStatic.h"
+#include "seeta/FaceLandmarker.h"
 #include <memory>
+class FaceEngine2;
 // CRealTimeTestDlg 对话框
 class CRealTimeTestDlg : public CDialogEx
 {
@@ -33,9 +34,9 @@ protected:
 	HICON m_hIcon;
 	CCaptureVideo m_capture;
 	CDrawVideo m_draw;
-	std::unique_ptr<seeta::FaceEngine> m_engine;
+	std::unique_ptr<FaceEngine2> m_engine;
 	std::unique_ptr<seeta::FaceLandmarker> m_fd68;
-	std::unique_ptr<seeta::ImageData> m_crop;
+	seeta::ImageData m_crop;
 	std::string yuv;
 
 	// 生成的消息映射函数
@@ -49,11 +50,9 @@ public:
 	afx_msg void OnBnClickedButtonReset();
 
 	CComboBox m_cbDevices;
-	CComboBox m_cbCheckType;
 	CListBox m_lFaces;
 	CString m_szFaceName;
 	CImageStatic m_imgFace;
-	std::map<int64_t, CString> m_mapFaceName;
 
 	afx_msg void OnBnClickedButtonAddFace();
 	afx_msg void OnBnClickedButtonDelFace();

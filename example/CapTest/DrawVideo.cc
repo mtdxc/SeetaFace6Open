@@ -113,7 +113,7 @@ void CDrawVideo::Draw(BYTE *pBuffer,int width, int height, LPCTSTR szText)
 			if (rc.bottom > destRect.bottom) rc.bottom = destRect.bottom;
 			Rectangle(hDC, rc.left, rc.top, rc.right, rc.bottom);
 			if (rc.text.length()) {
-				DrawText(hDC, rc.text.c_str(), -1, &rc, DT_TOP | DT_SINGLELINE);
+				DrawText(hDC, rc.text.c_str(), -1, &rc, DT_TOP);
 			}
 		}
 		SelectObject(hDC, oldBush);

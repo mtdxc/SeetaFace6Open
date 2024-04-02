@@ -61,10 +61,10 @@ bool FaceEngine2::addFaceDb(const char* name, void* rgb, int width, int height) 
     data.height = height;
     data.channels = 3;
     data.data = (unsigned char*)rgb;
-    return addFaceDb(name,data);
+    return addFaceDb(name, data);
 }
 
-bool FaceEngine2::addFaceDb(const char* name, const SeetaImageData & data){
+bool FaceEngine2::addFaceDb(const char* name, const SeetaImageData& data) {
     if (!fr || !name) return false;
     auto faces = fd->detect(data);
     if (!faces.size) {
@@ -114,15 +114,14 @@ void FaceEngine2::updateRgb(const SeetaImageData& data)
         fi->points = fl5->mark(*image_, fi->pos);
         faces_.push_back(fi);
         if (face_db_.size() && fr) {
-            float** features = nullptr;
-            fi->name_score = 0;
-            fi->name.clear();
-            if (getFeature(faces_.size() - 1, features)) {
+            float* features = nullptr;
+            if (getFeature(i, &features) && features) {
+                DbInfo& db = fi->db;
                 for (auto it : face_db_) {
-                    float score = fr->CalculateSimilarity(it.second.get(), *features);
-                    if (score > fi->name_score) {
-                        fi->name_score = score;
-                        fi->name = it.first;
+                    float score = fr->CalculateSimilarity(it.second.get(), features);
+                    if (score > db.score) {
+                        db.score = score;
+                        db.name = it.first;
                     }
                 }
             }
@@ -135,54 +134,68 @@ bool FaceEngine2::getFeature(int pos, float** feature) {
     if (!face || !fr) return false;
     if (face->features.size() < fr->GetExtractFeatureSize())
         face->features.resize(fr->GetExtractFeatureSize());
-    return fr->Extract(*face->img, face->points.data(), face->features.data());
+    *feature = face->features.data();
+    face->crop = fr->CropFaceV2(*face->img, face->points.data());
+    return fr->ExtractCroppedFace(face->crop, face->features.data());
+    //return fr->Extract(*face->img, face->points.data(), face->features.data());
 }
 
 bool FaceEngine2::getAge(int pos, int& age) {
     auto face = get(pos);
     if (!face) return false;
+    bool ret = true;
     if (face->age) {
         age = *face->age;
     }
     else {
         if (!age_) age_ = std::make_shared<AgePredictor>(getSetting("age_predictor.csta"));
-        if (age_->PredictAgeWithCrop(*face->img, face->points.data(), age))
+        if(face->cmpCrop(age_->GetCropFaceWidth(), age_->GetCropFaceHeight(), age_->GetCropFaceChannels())) {
+            ret = age_->CropFace(*face->img, face->points.data(), face->crop);
+        }
+        ret = age_->PredictAge(face->crop, age);
+        //ret = age_->PredictAgeWithCrop(*face->img, face->points.data(), age);
+        if (ret) {
             face->age = std::make_shared<int>(age);
+        }
     }
-    return true;
+    return ret;
 }
 
-bool FaceEngine2::getGender(int pos,int & ret) {
-
+bool FaceEngine2::getGender(int pos, int& val) {
     auto face = get(pos);
     if (!face) return false;
+    bool ret = true;
     if (face->gender) {
-        ret = *face->gender;
+        val = *face->gender;
     }
     else {
         if (!gender_) gender_ = std::make_shared<GenderPredictor>(getSetting("gender_predictor.csta"));
         GenderPredictor::GENDER g;
-        if (gender_->PredictGenderWithCrop(*face->img, face->points.data(), g)) {
+        if (face->cmpCrop(gender_->GetCropFaceWidth(), gender_->GetCropFaceHeight(), gender_->GetCropFaceChannels())) {
+            ret = gender_->CropFace(*face->img, face->points.data(), face->crop);
+        }
+        ret = gender_->PredictGender(face->crop, g);
+        //ret = gender_->PredictGenderWithCrop(*face->img, face->points.data(), g);
+        if (ret) {
             face->gender = std::make_shared<int>(g);
-            ret = g;
+            val = g;
         }
     }
-    return true;
+    return ret;
 }
 
 bool FaceEngine2::getEyeStat(int pos, int& left, int& right) {
-    bool ret = false;
     auto face = get(pos);
-    if (!face) return ret;
+    if (!face) return false;
+    bool ret = true;
     if (face->eye) {
         left = face->eye->first;
         right = face->eye->second;
-        return true;
     }
     else {
         if (!eye_)
             eye_ = std::make_shared<EyeStateDetector>(getSetting("eye_state.csta"));
-        EyeStateDetector::EYE_STATE l,r;
+        EyeStateDetector::EYE_STATE l, r;
         eye_->Detect(*face->img, face->points.data(), l, r);
         left = l;
         right = r;
@@ -191,12 +204,12 @@ bool FaceEngine2::getEyeStat(int pos, int& left, int& right) {
     }
 }
 
-bool FaceEngine2::getAnti(int pos, AntiSpoofing& ret) {
+bool FaceEngine2::getAnti(int pos, AntiSpoofing& val) {
     auto face = get(pos);
     if (!face) return false;
+    bool ret = true;
     if (face->anti) {
-        ret = *face->anti;
-        return true;
+        val = *face->anti;
     }
     else {
         if (!anti_) {
@@ -207,17 +220,17 @@ bool FaceEngine2::getAnti(int pos, AntiSpoofing& ret) {
             anti_->SetThreshold(0.3, 0.90);//设置默认阈值，另外一组阈值为(0.7, 0.55)
             anti_->SetBoxThresh(0.9);
         }
-        ret.status = anti_->Predict(*face->img, face->pos, face->points.data());
-        anti_->GetPreFrameScore(&ret.clarity, &ret.reality);
-        face->anti = std::make_shared<AntiSpoofing>(ret);
-        return true;
+        val.status = anti_->Predict(*face->img, face->pos, face->points.data());
+        anti_->GetPreFrameScore(&val.clarity, &val.reality);
+        face->anti = std::make_shared<AntiSpoofing>(val);
     }
+    return ret;
 }
 
 bool FaceEngine2::getMask(int pos, float& ret) {
     auto face = get(pos);
     if (!face) return false;
-    if (face->anti) {
+    if (face->mask) {
         ret = *face->mask;
         return true;
     }
@@ -255,4 +268,13 @@ const char* FaceEngine2::get_fas_status(int status) {
         return "正在检测";
     }
     return "无法判断";
+}
+
+inline int FaceInfo::cmpCrop(int width, int height, int channel) {
+    if (crop.channels == channel && crop.width == width && crop.height == crop.height)
+        return 0;
+    printf("%x reset crop %dx%dx%d", width, height, channel);
+    //return -1;
+    crop = seeta::ImageData(width, height, channel);
+    return 1;
 }

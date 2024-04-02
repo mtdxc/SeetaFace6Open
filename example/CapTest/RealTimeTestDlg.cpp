@@ -9,42 +9,8 @@
 #include "Ini.h"
 #include <io.h>
 #include <direct.h>
-#include <seeta/GenderPredictor.h>
-#include <seeta/AgePredictor.h>
-#include <seeta/EyeStateDetector.h>
-#include <seeta/FaceAntiSpoofing.h>
-#ifdef _DEBUG
-//release 库,11个
-#pragma comment(lib,"SeetaFaceDetector600d.lib") 
-#pragma comment(lib,"SeetaFaceLandmarker600d.lib")
+#include "../opencv/FaceEngine2.h"
 
-#pragma comment(lib,"SeetaFaceRecognizer610d.lib")
-#pragma comment(lib,"SeetaGenderPredictor600d.lib") 
-#pragma comment(lib,"SeetaAgePredictor600d.lib") 
-#pragma comment(lib,"SeetaFaceAntiSpoofingX600d.lib") 
-#pragma comment(lib,"SeetaEyeStateDetector200d.lib")
-
-//这四个没用到
-#pragma comment(lib,"SeetaMaskDetector200d.lib")
-#pragma comment(lib,"SeetaFaceTracking600d.lib") 
-#pragma comment(lib,"SeetaPoseEstimation600d.lib")
-#else
-//release 库,11个
-#pragma comment(lib,"SeetaFaceDetector600.lib") 
-#pragma comment(lib,"SeetaFaceLandmarker600.lib")
-
-#pragma comment(lib,"SeetaFaceRecognizer610.lib")
-#pragma comment(lib,"SeetaGenderPredictor600.lib") 
-#pragma comment(lib,"SeetaAgePredictor600.lib") 
-#pragma comment(lib,"SeetaFaceAntiSpoofingX600.lib") 
-#pragma comment(lib,"SeetaEyeStateDetector200.lib")
-
-//这四个没用到
-#pragma comment(lib,"SeetaMaskDetector200.lib")
-#pragma comment(lib,"SeetaFaceTracking600.lib") 
-#pragma comment(lib,"SeetaPoseEstimation600.lib")
-//#pragma comment(lib,"SeetaQualityAssessor300.lib")
-#endif
 #define SK_FACEDECT "FaceDetect"
 #define SK_FACETRACKER "FaceTracker"
 
@@ -86,55 +52,10 @@ CRealTimeTestDlg::CRealTimeTestDlg(CWnd* pParent /*=NULL*/)
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	std::string path = GetIniStr("Model", "Dir", "sf3.0_models");
 	try {
-	if (access(path.c_str(), 0) == 0) {
-		if (*path.rbegin() != '\\')
-			path += "\\";
-		seeta::ModelSetting::Device device = seeta::ModelSetting::CPU;
-		int id = 0;
-		seeta::ModelSetting FD_model(path + "face_detector.csta", device, id);
-		seeta::ModelSetting PD_model(path + "face_landmarker_pts5.csta", device, id);
-		seeta::ModelSetting FR_model(path + "face_recognizer.csta", device, id);
-		m_engine.reset(new seeta::FaceEngine(FD_model, PD_model, FR_model, 2, 16));
-		seeta::ModelSetting model2(path + "face_landmarker_pts68.csta", device, id);
+		m_engine.reset(new FaceEngine2);
+		m_engine->init(path.c_str(), "face_recognizer.csta");
+		seeta::ModelSetting model2(path + "/face_landmarker_pts68.csta");
 		m_fd68.reset(new seeta::FaceLandmarker(model2));
-	    /*
-		* Set minimum and maximum size of faces to detect (Default: 20, Not Limited)
-		- `face_detector.SetMinFaceSize(size);`
-		- `face_detector.SetMaxFaceSize(size);`
-		* Set step size of sliding window (Default: 4)
-		- `face_detector.SetWindowStep(step_x, step_y);`
-		* Set scaling factor of image pyramid (0 < `factor` < 1, Default: 0.8)
-		- `face_detector.SetImagePyramidScaleFactor(factor);`
-		* Set score threshold of detected faces (Default: 2.0)
-		- `face_detector.SetScoreThresh(thresh);`
-		*/
-		if (auto face_detector = &m_engine->FD) {
-			face_detector->set(seeta::FaceDetector::PROPERTY_MIN_FACE_SIZE, GetIniInt(SK_FACEDECT, "MinFaceSize", 80));
-			//face_detector->set(seeta::FaceDetector::PROPERTY_THRESHOLD, GetIniFloat(SK_FACEDECT, "ScoreThresh", 2.0));
-			//face_detector->SetImagePyramidScaleFactor(GetIniFloat(SK_FACEDECT, "ImagePyramidScaleFactor", 0.8));
-			//face_detector->SetWindowStep(GetIniInt(SK_FACEDECT, "StepX", 4), GetIniInt(SK_FACEDECT, "StepY", 4));
-		}
-
-		seeta::ModelSetting gb_setting(path + "gender_predictor.csta");
-		seeta::GenderPredictor GP(gb_setting);
-
-		//5.年龄检测模型初始化
-		seeta::ModelSetting ap_setting(path + "age_predictor.csta");
-		seeta::AgePredictor AP(ap_setting);
-
-		//6.眼睛状态模型初始化
-		seeta::ModelSetting setting;
-		setting.append(path + "eye_state.csta");
-		seeta::EyeStateDetector EBD(setting);
-
-		//7.活体检测模型初始化
-		seeta::ModelSetting anti_setting;
-		anti_setting.append(path + "fas_first.csta");
-		anti_setting.append(path + "fas_second.csta");
-		seeta::FaceAntiSpoofing FAS(anti_setting);
-		FAS.SetThreshold(0.3, 0.90);//设置默认阈值，另外一组阈值为(0.7, 0.55)
-		FAS.SetBoxThresh(0.9);
-	}
 	}
 	catch (std::exception e) {
 		AfxMessageBox(e.what());
@@ -153,7 +74,6 @@ void CRealTimeTestDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_COMBO_DEVICES, m_cbDevices);
-	DDX_Control(pDX, IDC_COMBO_CHECKTYPE, m_cbCheckType);
 	DDX_Control(pDX, IDC_LIST_FACE, m_lFaces);
 	DDX_Text(pDX, IDC_EDIT_FACE_NAME, m_szFaceName);
 	DDX_Control(pDX, IDC_STATIC_FACE, m_imgFace);
@@ -205,9 +125,6 @@ BOOL CRealTimeTestDlg::OnInitDialog()
 	// TODO: 在此添加额外的初始化代码
 	if (m_capture.EnumDevices(m_cbDevices.GetSafeHwnd()))
 		m_cbDevices.SetCurSel(0);
-	m_cbCheckType.AddString(_T("轮廓追踪"));
-	m_cbCheckType.AddString(_T("人脸识别"));
-	m_cbCheckType.SetCurSel(0);
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
 
@@ -276,17 +193,6 @@ void CRealTimeTestDlg::OnRgbData(BYTE* pRgb, int width, int height)
 
 	m_draw.rects.clear();
 	m_draw.mapPoints.clear();
-	switch (m_cbCheckType.GetCurSel())
-	{
-	case 0:
-	break;
-	case 1:
-		break;
-	case 2:
-		break;
-	default:
-		break;
-	}
 	if (m_engine) {
 		/*
 		seeta::ImageData rgb_data,yuv_data;
@@ -311,36 +217,57 @@ void CRealTimeTestDlg::OnRgbData(BYTE* pRgb, int width, int height)
 			pdst += stride;
 		}
 		// YUV420PtoRGB(pyuv, img_data.data, width, height, FALSE);
-		auto faces = m_engine->DetectFaces(img_data);
-		m_draw.rects.resize(faces.size());
-		for (int i = 0; i < faces.size(); i++)
+		m_engine->updateRgb(img_data);
+		int nFace = m_engine->face_size();
+		m_draw.rects.resize(nFace);
+		for (int i = 0; i < nFace; i++)
 		{
-			m_draw.rects[i].left = faces[i].pos.x;
-			m_draw.rects[i].top = faces[i].pos.y;
-			m_draw.rects[i].right = faces[i].pos.x + faces[i].pos.width;
-			m_draw.rects[i].bottom = faces[i].pos.y + faces[i].pos.height;
+			auto face = m_engine->get(i);
+			m_draw.rects[i].left = face->pos.x;
+			m_draw.rects[i].top = face->pos.y;
+			m_draw.rects[i].right = face->pos.x + face->pos.width;
+			m_draw.rects[i].bottom = face->pos.y + face->pos.height;
 			
 			m_draw.rects[i].text.clear();
-
-			auto points = m_engine->DetectPoints(img_data, faces[i].pos);
-			float similarity = 0;
-			int64_t idx = m_engine->Query(img_data, points.data(), &similarity);
-			if (m_mapFaceName.count(idx)) {
+			
+			if (face->db.score > 0.5) {
 				CString text;
-				text.Format("%s@%.2f", m_mapFaceName[idx], similarity);
+				text.Format("%s@%.2f", face->db.name.c_str(), face->db.score);
 				m_draw.rects[i].text = text;
 			}
-			if (i == 0) {
-				auto fdb = &m_engine->FDB;
-				if (!m_crop) {
-					m_crop.reset(new seeta::ImageData(fdb->GetCropFaceWidthV2(), fdb->GetCropFaceHeightV2(), fdb->GetCropFaceChannelsV2()));
-				}
-				fdb->CropFaceV2(img_data, &points[0], *m_crop);
-				m_imgFace.SetRGB(m_crop->data, m_crop->width, -m_crop->height);
+			// 增加检测信息
+			AntiSpoofing as;
+			if (IsDlgButtonChecked(IDC_CHECK_ANTI) && m_engine->getAnti(i, as)) {
+				if (m_draw.rects[i].text.length()) m_draw.rects[i].text.push_back(' ');
+				m_draw.rects[i].text += m_engine->get_fas_status(as.status);
 			}
-
+			int val1, val2;
+			if (IsDlgButtonChecked(IDC_CHECK_GENDER) && m_engine->getGender(i, val1)) {
+				if (m_draw.rects[i].text.length()) m_draw.rects[i].text.push_back(' ');
+				m_draw.rects[i].text += val1 ? "女" : "男";
+			}
+			if (IsDlgButtonChecked(IDC_CHECK_AGE) && m_engine->getAge(i, val1)) {
+				if (m_draw.rects[i].text.length()) m_draw.rects[i].text.push_back(' ');
+				m_draw.rects[i].text += std::to_string(val1) + "岁";
+			}
+			float fMask;
+			if (IsDlgButtonChecked(IDC_CHECK_MASK) && m_engine->getMask(i, fMask) && fMask > 0.5) {
+				if (m_draw.rects[i].text.length()) m_draw.rects[i].text.push_back(' ');
+				m_draw.rects[i].text += "戴口罩";
+			}
+			if (IsDlgButtonChecked(IDC_CHECK_EYES) && m_engine->getEyeStat(i, val1, val2)) {
+				if (m_draw.rects[i].text.length()) m_draw.rects[i].text.push_back('\n');
+				m_draw.rects[i].text += std::string("左眼:") + m_engine->get_eye_status(val1);
+				m_draw.rects[i].text += std::string(",右眼:") + m_engine->get_eye_status(val2);
+			}
+			// 保存截图
+			if (i == 0 && face->crop.count()) {
+				m_crop = face->crop;
+				m_imgFace.SetRGB(m_crop.data, m_crop.width, -m_crop.height);
+			}
+			auto points = face->points;
 			if (m_fd68) {
-				points = m_fd68->mark(img_data, faces[i].pos);
+				points = m_fd68->mark(img_data, face->pos);
 			}
 			for (int i = 0; i < points.size(); i++) {
 				POINT pt{ points[i].x, points[i].y };
@@ -404,18 +331,29 @@ std::string GetFaceFile(int64_t data) {
 	return sRet + std::to_string(data) + ".bmp";
 }
 
+std::string GetFaceFile(const char* data) {
+	std::string sRet = "faces/";
+	struct stat fileStat;
+	if ((stat(sRet.c_str(), &fileStat) == 0) && S_ISDIR(fileStat.st_mode))
+	{
+		// exist = true;
+	}
+	else {
+		mkdir(sRet.c_str());
+	}
+	return sRet + data + ".bmp";
+}
+
 void CRealTimeTestDlg::OnBnClickedButtonAddFace()
 {
 	UpdateData();
-	if (m_szFaceName.GetLength() && m_engine && m_crop) {
+	if (m_szFaceName.GetLength() && m_engine && m_crop.width) {
 		
 		int idx = m_lFaces.FindString(0, m_szFaceName);
 		if (idx == -1) {
 			idx = m_lFaces.AddString(m_szFaceName);
-			int64_t data = m_engine->FDB.RegisterByCroppedFace(*m_crop);
-			m_mapFaceName[data] = m_szFaceName;
-			m_lFaces.SetItemData(idx, data);
-			m_imgFace.SaveImage(GetFaceFile(data).c_str());
+			m_engine->addFaceDb(m_szFaceName, m_crop);
+			m_imgFace.SaveImage(GetFaceFile(m_szFaceName).c_str());
 		}
 		m_lFaces.SetCurSel(idx);
 	}
@@ -427,11 +365,11 @@ void CRealTimeTestDlg::OnBnClickedButtonDelFace()
 	// TODO: 在此添加控件通知处理程序代码
 	int sel = m_lFaces.GetCurSel();
 	if (sel != -1) {
-		int64_t data = m_lFaces.GetItemData(sel);
+		CString text;
+		m_lFaces.GetText(sel, text);
 		if (m_engine)
-			m_engine->Delete(data);
-		m_mapFaceName.erase(data);
-		remove(GetFaceFile(data).c_str());
+			m_engine->delFaceDb(text);
+		remove(GetFaceFile(m_szFaceName).c_str());
 		m_lFaces.DeleteString(sel);
 	}
 }
@@ -442,8 +380,7 @@ void CRealTimeTestDlg::OnLbnSelchangeListFace()
 	int sel = m_lFaces.GetCurSel();
 	if (sel != -1) {
 		m_lFaces.GetText(sel, m_szFaceName);
-		int64_t data = m_lFaces.GetItemData(sel);
-		m_imgFace.SetImage(GetFaceFile(data).c_str());
+		m_imgFace.SetImage(GetFaceFile(m_szFaceName).c_str());
 		UpdateData(FALSE);
 	}
 }
