@@ -9,5 +9,5 @@ include_directories(${OpenCV_INCLUDE_DIRS} ${Build_DIR}/include)
 link_directories(${Build_DIR}/lib/x64)
 set(EXECUTABLE_OUTPUT_PATH ${Build_DIR}/bin/x64)
 
-add_executable(${PROJECT_NAME} main.cpp)	# *.cpp指要编译的那些源文件
+add_executable(${PROJECT_NAME} main.cpp FaceEngine2.cpp)	# *.cpp指要编译的那些源文件
 target_link_libraries(${PROJECT_NAME} PRIVATE ${OpenCV_LIBS})
