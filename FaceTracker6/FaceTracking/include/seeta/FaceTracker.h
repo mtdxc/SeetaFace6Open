@@ -1,4 +1,4 @@
-#ifndef INC_SEETA_FACETRACKING_H
+ï»¿#ifndef INC_SEETA_FACETRACKING_H
 #define INC_SEETA_FACETRACKING_H
 
 #include "Common/Struct.h"
@@ -30,35 +30,35 @@ namespace seeta
             SEETA_API void SetInterval(int interval); 
 
             /**
-             * \brief ¼ì²âÈËÁ³
-             * \param [in] image ÊäÈëÍ¼Ïñ£¬ĞèÒª RGB ²ÊÉ«Í¨µÀ
-             * \return ¼ì²âµ½µÄÈËÁ³£¨SeetaTrackingFaceInfo£©Êı×é
-             * \note ´Ëº¯Êı²»Ö§³Ö¶àÏß³Ìµ÷ÓÃ£¬ÔÚ¶àÏß³Ì»·¾³ÏÂĞèÒª½¨Á¢¶ÔÓ¦µÄ FaceTracker µÄ¶ÔÏó·Ö±ğµ÷ÓÃ¼ì²âº¯Êı
+             * \brief æ£€æµ‹äººè„¸
+             * \param [in] image è¾“å…¥å›¾åƒï¼Œéœ€è¦ RGB å½©è‰²é€šé“
+             * \return æ£€æµ‹åˆ°çš„äººè„¸ï¼ˆSeetaTrackingFaceInfoï¼‰æ•°ç»„
+             * \note æ­¤å‡½æ•°ä¸æ”¯æŒå¤šçº¿ç¨‹è°ƒç”¨ï¼Œåœ¨å¤šçº¿ç¨‹ç¯å¢ƒä¸‹éœ€è¦å»ºç«‹å¯¹åº”çš„ FaceTracker çš„å¯¹è±¡åˆ†åˆ«è°ƒç”¨æ£€æµ‹å‡½æ•°
              * \see SeetaTrackingFaceInfo, SeetaImageData
              */
             SEETA_API SeetaTrackingFaceInfoArray Track( const SeetaImageData &image ) const;
 
             /**
-             * \brief ¼ì²âÈËÁ³
-             * \param [in] image ÊäÈëÍ¼Ïñ£¬ĞèÒª RGB ²ÊÉ«Í¨µÀ
-             * \param [in] frame_no ÊäÈëÖ¡ºÅ£¬¸úÊä³öÖ¡ºÅÓĞ¹Ø
-             * \return ¼ì²âµ½µÄÈËÁ³£¨SeetaTrackingFaceInfo£©Êı×é
-             * \note ´Ëº¯Êı²»Ö§³Ö¶àÏß³Ìµ÷ÓÃ£¬ÔÚ¶àÏß³Ì»·¾³ÏÂĞèÒª½¨Á¢¶ÔÓ¦µÄ FaceTracker µÄ¶ÔÏó·Ö±ğµ÷ÓÃ¼ì²âº¯Êı
+             * \brief æ£€æµ‹äººè„¸
+             * \param [in] image è¾“å…¥å›¾åƒï¼Œéœ€è¦ RGB å½©è‰²é€šé“
+             * \param [in] frame_no è¾“å…¥å¸§å·ï¼Œè·Ÿè¾“å‡ºå¸§å·æœ‰å…³
+             * \return æ£€æµ‹åˆ°çš„äººè„¸ï¼ˆSeetaTrackingFaceInfoï¼‰æ•°ç»„
+             * \note æ­¤å‡½æ•°ä¸æ”¯æŒå¤šçº¿ç¨‹è°ƒç”¨ï¼Œåœ¨å¤šçº¿ç¨‹ç¯å¢ƒä¸‹éœ€è¦å»ºç«‹å¯¹åº”çš„ FaceTracker çš„å¯¹è±¡åˆ†åˆ«è°ƒç”¨æ£€æµ‹å‡½æ•°
              * \see SeetaTrackingFaceInfo, SeetaImageData
-             * \note frame_no Ğ¡ÓÚ0 Ôò×Ô¶¯»¯ frame_no
+             * \note frame_no å°äº0 åˆ™è‡ªåŠ¨åŒ– frame_no
              */
             SEETA_API SeetaTrackingFaceInfoArray Track( const SeetaImageData &image, int frame_no ) const;
 
             /**
-             * \brief ÉèÖÃ×îĞ¡ÈËÁ³
-             * \param [in] size ×îĞ¡¿É¼ì²âµÄÈËÁ³´óĞ¡£¬ÎªÈËÁ³¿íºÍ¸ß³Ë»ıµÄ¶ş´Î¸ùÖµ
-             * \note ×îÏÂÈËÁ³Îª 20£¬Ğ¡ÓÚ 20 µÄÖµ»á±»ºöÂÔ
+             * \brief è®¾ç½®æœ€å°äººè„¸
+             * \param [in] size æœ€å°å¯æ£€æµ‹çš„äººè„¸å¤§å°ï¼Œä¸ºäººè„¸å®½å’Œé«˜ä¹˜ç§¯çš„äºŒæ¬¡æ ¹å€¼
+             * \note æœ€ä¸‹äººè„¸ä¸º 20ï¼Œå°äº 20 çš„å€¼ä¼šè¢«å¿½ç•¥
              */
             SEETA_API void SetMinFaceSize( int32_t size );
 
             /**
-             * \brief »ñÈ¡×îĞ¡ÈËÁ³
-             * \return ×îĞ¡¿É¼ì²âµÄÈËÁ³´óĞ¡£¬ÎªÈËÁ³¿íºÍ¸ß³Ë»ıµÄ¶ş´Î¸ùÖµ
+             * \brief è·å–æœ€å°äººè„¸
+             * \return æœ€å°å¯æ£€æµ‹çš„äººè„¸å¤§å°ï¼Œä¸ºäººè„¸å®½å’Œé«˜ä¹˜ç§¯çš„äºŒæ¬¡æ ¹å€¼
              */
             SEETA_API int32_t GetMinFaceSize() const;
 
@@ -68,19 +68,12 @@ namespace seeta
             SEETA_API float GetThreshold() const;
 
 
- 	    /**
-	      * \brief ¿¿¿¿¿¿¿¿¿¿¿¿¿¿?
-	      * \param stable ¿¿¿¿
-	      * \note ¿¿¿¿¿¿¿¿¿¿¿¿
-	      * \note ¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿
-	     */
-	    SEETA_API void SetVideoStable(bool stable = true);
-
-	    /**
-	      * \brief ¿¿¿¿¿¿¿¿¿¿¿¿?
-	      * \return ¿¿¿¿
-	      */
-	    SEETA_API bool GetVideoStable() const;
+            /**
+             * \brief è®¾ç½®è§†é¢‘ç¨³å®šæ€§
+             * \param stable è¿™ä¸ªå‚æ•°è®¾ä¸ºçœŸçš„è¯ï¼Œå°±ä¼šè¿›è¡Œæ£€æµ‹ç»“æœçš„å¸§é—´å¹³æ»‘ï¼Œä½¿å¾—æ£€æµ‹ç»“æœä»è§†è§‰ä¸Šæ›´å¥½ä¸€äº›
+             */
+            SEETA_API void SetVideoStable(bool stable = true);
+            SEETA_API bool GetVideoStable() const;
 
             SEETA_API void SetVideoSize(int vidwidth, int vidheight);
 

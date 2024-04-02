@@ -72,8 +72,7 @@ namespace seeta
             }
 
             SeetaTrackingFaceInfoArray Track( const SeetaImageData &image, int frame_no = -1 ) {
-                if( image.width != video_width ||
-                        image.height != video_height ) {
+                if( image.width != video_width || image.height != video_height ) {
                     orz::Log( orz::FATAL ) << "Track " <<
                                            "Input unsupported image size (" << image.width << ", " << image.height << ") vs. (" <<
                                            video_width << ", " << video_height << ") expected." << orz::crash;

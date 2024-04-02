@@ -48,9 +48,7 @@ namespace seeta {
             }
 
             SEETA_API int GetCropFaceWidthV2() const;
-
             SEETA_API int GetCropFaceHeightV2() const;
-
             SEETA_API int GetCropFaceChannelsV2() const;
 
             SEETA_API bool CropFaceV2(const SeetaImageData &image, const SeetaPointF *points, SeetaImageData &face);
@@ -64,7 +62,6 @@ namespace seeta {
             SEETA_API void set(Property property, double value);
 
             SEETA_API double get(Property property) const;
-
 
         private:
             FaceRecognizer(const FaceRecognizer &) = delete;
