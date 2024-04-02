@@ -69,7 +69,7 @@ public:
     HRESULT Start(int iDeviceID, HWND hWnd);
 	// 停止视频捕捉
 	void Stop();
-  bool started() { return m_pGB != NULL; }
+	bool started() { return m_pGB != NULL; }
 	typedef std::vector<CString> DevList;
 	/// 把视频设备枚举到列表控件中
     static int EnumDevices(HWND hList);

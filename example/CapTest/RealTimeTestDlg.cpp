@@ -272,7 +272,7 @@ void CRealTimeTestDlg::OnRgbData(BYTE* pRgb, int width, int height)
 		yuv.resize(nyuv);
 	BYTE* pyuv = (BYTE*)yuv.data();
 	// 这边要进行翻转(否则识别不对)！
-	RGBtoYUV420P(pRgb, pyuv, width, height, 3, TRUE);
+	// RGBtoYUV420P(pRgb, pyuv, width, height, 3, TRUE);
 
 	m_draw.rects.clear();
 	m_draw.mapPoints.clear();
@@ -288,33 +288,55 @@ void CRealTimeTestDlg::OnRgbData(BYTE* pRgb, int width, int height)
 		break;
 	}
 	if (m_engine) {
-		seeta::ImageData img_data;
+		/*
+		seeta::ImageData rgb_data,yuv_data;
 		// yuv通道数据
-		img_data.width = width;
-		img_data.height = height;
-#if 1
-		img_data.channels = 3;
-		img_data.data = pRgb;// -(height - 1) * width * 3;
-#else
-		img_data.channels = 1;
-		img_data.data = pyuv;
-#endif
-
+		rgb_data.width = width;
+		rgb_data.height = height;
+		yuv_data.width = width;
+		yuv_data.height = height;
+		rgb_data.channels = 3;
+		rgb_data.data = pRgb;// -(height - 1) * width * 3;
+		yuv_data.channels = 1;
+		yuv_data.data = pyuv;
+		seeta::ImageData& img_data = rgb_data;
+		*/
+		seeta::ImageData img_data(width, height, 3);
+		byte* pdst = img_data.data;
+		int stride = width * 3;
+		for (size_t y = 0; y < height; y++)
+		{
+			byte* psrc = pRgb + (height - 1 - y) * stride;
+			memcpy(pdst, psrc, stride);
+			pdst += stride;
+		}
+		// YUV420PtoRGB(pyuv, img_data.data, width, height, FALSE);
 		auto faces = m_engine->DetectFaces(img_data);
 		m_draw.rects.resize(faces.size());
 		for (int i = 0; i < faces.size(); i++)
 		{
-			m_draw.rects[i] = RECT{ faces[i].pos.x, faces[i].pos.y,
-				faces[i].pos.x + faces[i].pos.width, faces[i].pos.y + faces[i].pos.height };
+			m_draw.rects[i].left = faces[i].pos.x;
+			m_draw.rects[i].top = faces[i].pos.y;
+			m_draw.rects[i].right = faces[i].pos.x + faces[i].pos.width;
+			m_draw.rects[i].bottom = faces[i].pos.y + faces[i].pos.height;
+			
+			m_draw.rects[i].text.clear();
 
 			auto points = m_engine->DetectPoints(img_data, faces[i].pos);
+			float similarity = 0;
+			int64_t idx = m_engine->Query(img_data, points.data(), &similarity);
+			if (m_mapFaceName.count(idx)) {
+				CString text;
+				text.Format("%s@%.2f", m_mapFaceName[idx], similarity);
+				m_draw.rects[i].text = text;
+			}
 			if (i == 0) {
 				auto fdb = &m_engine->FDB;
 				if (!m_crop) {
 					m_crop.reset(new seeta::ImageData(fdb->GetCropFaceWidthV2(), fdb->GetCropFaceHeightV2(), fdb->GetCropFaceChannelsV2()));
 				}
 				fdb->CropFaceV2(img_data, &points[0], *m_crop);
-				m_imgFace.SetRGB(m_crop->data, m_crop->width, m_crop->height);
+				m_imgFace.SetRGB(m_crop->data, m_crop->width, -m_crop->height);
 			}
 
 			if (m_fd68) {
@@ -390,7 +412,8 @@ void CRealTimeTestDlg::OnBnClickedButtonAddFace()
 		int idx = m_lFaces.FindString(0, m_szFaceName);
 		if (idx == -1) {
 			idx = m_lFaces.AddString(m_szFaceName);
-			int64_t data = m_engine->Register(*m_crop);
+			int64_t data = m_engine->FDB.RegisterByCroppedFace(*m_crop);
+			m_mapFaceName[data] = m_szFaceName;
 			m_lFaces.SetItemData(idx, data);
 			m_imgFace.SaveImage(GetFaceFile(data).c_str());
 		}
@@ -407,6 +430,7 @@ void CRealTimeTestDlg::OnBnClickedButtonDelFace()
 		int64_t data = m_lFaces.GetItemData(sel);
 		if (m_engine)
 			m_engine->Delete(data);
+		m_mapFaceName.erase(data);
 		remove(GetFaceFile(data).c_str());
 		m_lFaces.DeleteString(sel);
 	}

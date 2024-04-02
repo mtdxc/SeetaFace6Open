@@ -49,23 +49,21 @@ using namespace seeta;
 using namespace std;
 using namespace cv;
 
-void drawResult(Scalar color,std::vector<string> labels,int classId, float conf, int left, int top, int right, int bottom, Mat& frame)
+void drawResult(Scalar color, const std::vector<string>& labels, int classId, float conf, int left, int top, int right, int bottom, Mat& frame)
 {
     int fontHeight = 25;
     int fontTotalHeight = fontHeight * labels.size();
     int thickness = -1;
     int linestyle = LineTypes::LINE_AA;
     int baseline = 0;
-
+    int padding = 5;
 
     int max_label_index = 0;
-    int padding = 5;
     for (int i = 1; i < labels.size(); i++) {
         if (labels[i].length() > labels[max_label_index].length())
             max_label_index = i;
     }
     cv::Size text_size = cv::getTextSize(labels[max_label_index], fontHeight, 1.0f, thickness = 0, &baseline);
-
 
     fontTotalHeight += 2 * padding + 2* labels.size();
     text_size.width += 2 * padding;
@@ -109,7 +107,7 @@ void drawResult(Scalar color,std::vector<string> labels,int classId, float conf,
 }
 
 //提取特征
-bool extract_feature(Mat img,const FaceDetector& FD,const FaceLandmarker& FL,const FaceRecognizer& FR,float* feature)
+bool extract_feature(Mat img,const FaceDetector& FD,const FaceLandmarker& FL,const FaceRecognizer& FR, float* feature)
 {
   SeetaImageData simg;
   simg.height = img.rows;
@@ -132,28 +130,28 @@ bool extract_feature(Mat img,const FaceDetector& FD,const FaceLandmarker& FL,con
 }
 
 
-string get_eye_status(seeta::EyeStateDetector::EYE_STATE state)
+const char* get_eye_status(EyeStateDetector::EYE_STATE state)
 {
-  if (state == seeta::EyeStateDetector::EYE_CLOSE)
+  if (state == EyeStateDetector::EYE_CLOSE)
     return "闭合";
-  else if (state == seeta::EyeStateDetector::EYE_OPEN)
+  else if (state == EyeStateDetector::EYE_OPEN)
     return "张开";
-  else if (state == seeta::EyeStateDetector::EYE_RANDOM)
+  else if (state == EyeStateDetector::EYE_RANDOM)
     return "无法判断";
   else
     return "无法判断";
 }
 
 
-string get_fas_status(seeta::FaceAntiSpoofing::Status status) {
+const char* get_fas_status(FaceAntiSpoofing::Status status) {
   switch (status) {
-  case seeta::FaceAntiSpoofing::REAL:
+  case FaceAntiSpoofing::REAL:
     return "真实人脸";
-  case seeta::FaceAntiSpoofing::SPOOF:
+  case FaceAntiSpoofing::SPOOF:
     return "照片人脸";
-  case seeta::FaceAntiSpoofing::FUZZY:
+  case FaceAntiSpoofing::FUZZY:
     return "无法判断";
-  case seeta::FaceAntiSpoofing::DETECTING:
+  case FaceAntiSpoofing::DETECTING:
     return "正在检测";
   }
   return "无法判断";

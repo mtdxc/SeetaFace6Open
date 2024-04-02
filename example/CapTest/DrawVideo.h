@@ -4,11 +4,15 @@
 #define AVLIB_DRAWVIDEO_H_
 #include <Vfw.h>
 #include <vector>
+#include <string>
 #include <map>
+struct RectInfo : public RECT {
+	std::string text;
+};
 class CDrawVideo
 {
 public:
-	std::vector<RECT> rects;
+	std::vector<RectInfo> rects;
 	typedef std::vector<POINT> POINTS;
 	std::map<COLORREF, POINTS> mapPoints;
 	//Attributes

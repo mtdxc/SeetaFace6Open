@@ -53,6 +53,7 @@ public:
 	CListBox m_lFaces;
 	CString m_szFaceName;
 	CImageStatic m_imgFace;
+	std::map<int64_t, CString> m_mapFaceName;
 
 	afx_msg void OnBnClickedButtonAddFace();
 	afx_msg void OnBnClickedButtonDelFace();

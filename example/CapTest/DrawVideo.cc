@@ -64,28 +64,29 @@ void CDrawVideo::Draw(BYTE *pBuffer,int width, int height, LPCTSTR szText)
 	{
 		bih.bmiHeader.biWidth = width;
 		bih.bmiHeader.biHeight = height;
-		bih.bmiHeader.biSizeImage=width * height * 3;
+		bih.bmiHeader.biSizeImage = width * height * 3;
 		if (m_bUseGDI) {
 			int oldMode = SetStretchBltMode(hDC, COLORONCOLOR);
 			StretchDIBits(hDC, destRect.left, destRect.top, destRect.Width(), destRect.Height(),
 				0, 0, width, height, pBuffer, &bih, DIB_RGB_COLORS, SRCCOPY);
 			SetStretchBltMode(hDC, oldMode);
-	}
-	else if (!::DrawDibDraw(m_hDib,
-		hDC,
-		destRect.left, // dest : left pos
-		destRect.top, // dest : top pos
-		destRect.Width(), // don't zoom x
-		destRect.Height(), // don't zoom y
-		&bih.bmiHeader, // bmp header info
-		pBuffer,    // bmp data
-		0, // dest : left pos
-		0, // dest : top pos
-		width, // don't zoom x
-		height, // don't zoom y
-		DDF_NOTKEYFRAME ))   // use prev params....//DDF_SAME_DRAW
-			DBG_INFO(GID_DRAWVDO, "DrawDibDraw %X error", m_hWnd);
-
+		}
+		else {
+			if (!::DrawDibDraw(m_hDib,
+				hDC,
+				destRect.left, // dest : left pos
+				destRect.top, // dest : top pos
+				destRect.Width(), // don't zoom x
+				destRect.Height(), // don't zoom y
+				&bih.bmiHeader, // bmp header info
+				pBuffer,    // bmp data
+				0, // dest : left pos
+				0, // dest : top pos
+				width, // don't zoom x
+				height, // don't zoom y
+				DDF_NOTKEYFRAME))   // use prev params....//DDF_SAME_DRAW
+				DBG_INFO(GID_DRAWVDO, "DrawDibDraw %X error", m_hWnd);
+		}
 	}
 	// m_desRect.top = m_desRect.bottom - 20;
 	if(szText && szText[0]) {
@@ -106,7 +107,14 @@ void CDrawVideo::Draw(BYTE *pBuffer,int width, int height, LPCTSTR szText)
 			//FrameRect(hDC, &rc, bush);
 			rc.left *= xscale; rc.right *= xscale;
 			rc.top *= yscale; rc.bottom *= yscale;
+			if (rc.left < 0) rc.left = 0;
+			if (rc.top < 0) rc.top = 0;
+			if (rc.right > destRect.right) rc.right = destRect.right;
+			if (rc.bottom > destRect.bottom) rc.bottom = destRect.bottom;
 			Rectangle(hDC, rc.left, rc.top, rc.right, rc.bottom);
+			if (rc.text.length()) {
+				DrawText(hDC, rc.text.c_str(), -1, &rc, DT_TOP | DT_SINGLELINE);
+			}
 		}
 		SelectObject(hDC, oldBush);
 		SelectObject(hDC, oldPen);
@@ -120,6 +128,8 @@ void CDrawVideo::Draw(BYTE *pBuffer,int width, int height, LPCTSTR szText)
 			for (POINT pt : iter->second) {
 				pt.x *= xscale;
 				pt.y *= yscale;
+				if (pt.x < 0) pt.x = 0; else if (pt.x > destRect.right) pt.x = destRect.right;
+				if (pt.y < 0) pt.y = 0; else if (pt.y > destRect.bottom) pt.y = destRect.bottom;
 				Ellipse(hDC, pt.x - PT_SIZE, pt.y - PT_SIZE, pt.x + PT_SIZE, pt.y + PT_SIZE);
 				//SetPixel(hDC, pt.x, pt.y, RGB(255, 0, 0));
 			}
