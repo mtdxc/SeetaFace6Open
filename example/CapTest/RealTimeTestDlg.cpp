@@ -48,6 +48,11 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 CRealTimeTestDlg::CRealTimeTestDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_REALTIMETEST_DIALOG, pParent)
 	, m_szFaceName(_T(""))
+	, m_bAge(FALSE)
+	, m_bSex(FALSE)
+	, m_bEyes(FALSE)
+	, m_bAnti(FALSE)
+	, m_bMask(FALSE)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 	std::string path = GetIniStr("Model", "Dir", "sf3.0_models");
@@ -77,12 +82,18 @@ void CRealTimeTestDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_LIST_FACE, m_lFaces);
 	DDX_Text(pDX, IDC_EDIT_FACE_NAME, m_szFaceName);
 	DDX_Control(pDX, IDC_STATIC_FACE, m_imgFace);
+	DDX_Check(pDX, IDC_CHECK_AGE, m_bAge);
+	DDX_Check(pDX, IDC_CHECK_GENDER, m_bSex);
+	DDX_Check(pDX, IDC_CHECK_EYES, m_bEyes);
+	DDX_Check(pDX, IDC_CHECK_ANTI, m_bAnti);
+	DDX_Check(pDX, IDC_CHECK_MASK, m_bMask);
 }
 
 BEGIN_MESSAGE_MAP(CRealTimeTestDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_COMMAND_RANGE(IDC_CHECK_GENDER, IDC_CHECK_AGE, &CRealTimeTestDlg::OnButtonCheckBox)
 	ON_BN_CLICKED(IDC_BUTTON_START_PREV, &CRealTimeTestDlg::OnBnClickedButtonStartPrev)
 	ON_BN_CLICKED(IDC_BUTTON_RESET, &CRealTimeTestDlg::OnBnClickedButtonReset)
 	ON_BN_CLICKED(IDC_BUTTON_ADD_FACE, &CRealTimeTestDlg::OnBnClickedButtonAddFace)
@@ -218,25 +229,25 @@ void CRealTimeTestDlg::OnRgbData(std::shared_ptr<seeta::ImageData> rgb)
 			}
 			// 增加检测信息
 			AntiSpoofing as;
-			if (IsDlgButtonChecked(IDC_CHECK_ANTI) && m_engine->getAnti(i, as)) {
+			if (m_bAnti && m_engine->getAnti(i, as)) {
 				if (m_draw.rects[i].text.length()) m_draw.rects[i].text.push_back(' ');
 				m_draw.rects[i].text += m_engine->get_fas_status(as.status);
 			}
 			int val1, val2;
-			if (IsDlgButtonChecked(IDC_CHECK_GENDER) && m_engine->getGender(i, val1)) {
+			if (m_bSex && m_engine->getGender(i, val1)) {
 				if (m_draw.rects[i].text.length()) m_draw.rects[i].text.push_back(' ');
 				m_draw.rects[i].text += val1 ? "女" : "男";
 			}
-			if (IsDlgButtonChecked(IDC_CHECK_AGE) && m_engine->getAge(i, val1)) {
+			if (m_bAge && m_engine->getAge(i, val1)) {
 				if (m_draw.rects[i].text.length()) m_draw.rects[i].text.push_back(' ');
 				m_draw.rects[i].text += std::to_string(val1) + "岁";
 			}
 			float fMask;
-			if (IsDlgButtonChecked(IDC_CHECK_MASK) && m_engine->getMask(i, fMask) && fMask > 0.5) {
+			if (m_bMask && m_engine->getMask(i, fMask) && fMask > 0.5) {
 				if (m_draw.rects[i].text.length()) m_draw.rects[i].text.push_back(' ');
 				m_draw.rects[i].text += "戴口罩";
 			}
-			if (IsDlgButtonChecked(IDC_CHECK_EYES) && m_engine->getEyeStat(i, val1, val2)) {
+			if (m_bEyes && m_engine->getEyeStat(i, val1, val2)) {
 				if (m_draw.rects[i].text.length()) m_draw.rects[i].text.push_back('\n');
 				m_draw.rects[i].text += std::string("左眼:") + m_engine->get_eye_status(val1);
 				m_draw.rects[i].text += std::string(",右眼:") + m_engine->get_eye_status(val2);
@@ -292,7 +303,11 @@ void CRealTimeTestDlg::OnBnClickedButtonStartPrev()
 }
 
 void CRealTimeTestDlg::OnBnClickedButtonReset() {
-	// TODO: 在此添加控件通知处理程序代码
+}
+
+void CRealTimeTestDlg::OnButtonCheckBox(UINT nID)
+{
+	UpdateData();
 }
 
 #ifndef S_ISDIR
@@ -364,4 +379,25 @@ void CRealTimeTestDlg::OnLbnSelchangeListFace()
 		m_imgFace.SetImage(GetFaceFile(m_szFaceName).c_str());
 		UpdateData(FALSE);
 	}
+}
+
+
+BOOL CRealTimeTestDlg::PreTranslateMessage(MSG* pMsg)
+{
+	// TODO: 在此添加专用代码和/或调用基类
+	if (pMsg->message == WM_KEYDOWN)
+	{
+		switch (pMsg->wParam)
+		{
+		case VK_ESCAPE: //Esc按键事件
+			return true;
+		case VK_RETURN: //Enter按键事件
+			return true;
+		case VK_DELETE:
+			return true;
+		default:
+			;
+		}
+	}
+	return CDialogEx::PreTranslateMessage(pMsg);
 }

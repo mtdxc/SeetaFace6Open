@@ -40,6 +40,7 @@ protected:
 
 	// 生成的消息映射函数
 	virtual BOOL OnInitDialog();
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
@@ -47,7 +48,7 @@ protected:
 public:
 	afx_msg void OnBnClickedButtonStartPrev();
 	afx_msg void OnBnClickedButtonReset();
-
+	afx_msg void OnButtonCheckBox(UINT nID);
 	CComboBox m_cbDevices;
 	CListBox m_lFaces;
 	CString m_szFaceName;
@@ -56,4 +57,9 @@ public:
 	afx_msg void OnBnClickedButtonAddFace();
 	afx_msg void OnBnClickedButtonDelFace();
 	afx_msg void OnLbnSelchangeListFace();
+	BOOL m_bAge;
+	BOOL m_bSex;
+	BOOL m_bEyes;
+	BOOL m_bAnti;
+	BOOL m_bMask;
 };
