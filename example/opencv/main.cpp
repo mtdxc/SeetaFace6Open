@@ -140,8 +140,8 @@ int main()
       //----人脸----
       auto face = engine.get(i);
 
-      if (face->name.length()) 
-        labels.push_back(face->name +"（相似度:"+ to_string(face->name_score *100).substr(0,5) +"）");
+      if (face->db.score > 0.5) 
+        labels.push_back(face->db.name +"（相似度:"+ to_string(face->db.score *100).substr(0,5) +"）");
       else 
         labels.push_back("查无此人");
     

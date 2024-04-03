@@ -179,45 +179,26 @@ HCURSOR CRealTimeTestDlg::OnQueryDragIcon()
 
 void VideCallBack(BYTE* data, int width, int height, void* user) {
 	CRealTimeTestDlg* pDlg = (CRealTimeTestDlg*)user;
-	if (pDlg) pDlg->OnRgbData(data, width, height);
-}
-
-void CRealTimeTestDlg::OnRgbData(BYTE* pRgb, int width, int height)
-{
-	int nyuv = width * height * 3 / 2;
-	if (yuv.size() < nyuv)
-		yuv.resize(nyuv);
-	BYTE* pyuv = (BYTE*)yuv.data();
-	// 这边要进行翻转(否则识别不对)！
-	// RGBtoYUV420P(pRgb, pyuv, width, height, 3, TRUE);
-
-	m_draw.rects.clear();
-	m_draw.mapPoints.clear();
-	if (m_engine) {
-		/*
-		seeta::ImageData rgb_data,yuv_data;
-		// yuv通道数据
-		rgb_data.width = width;
-		rgb_data.height = height;
-		yuv_data.width = width;
-		yuv_data.height = height;
-		rgb_data.channels = 3;
-		rgb_data.data = pRgb;// -(height - 1) * width * 3;
-		yuv_data.channels = 1;
-		yuv_data.data = pyuv;
-		seeta::ImageData& img_data = rgb_data;
-		*/
-		seeta::ImageData img_data(width, height, 3);
-		byte* pdst = img_data.data;
+	if (pDlg) {
+		auto rgb = std::make_shared<seeta::ImageData>(width, height, 3);
+		byte* pdst = rgb->data;
 		int stride = width * 3;
 		for (size_t y = 0; y < height; y++)
 		{
-			byte* psrc = pRgb + (height - 1 - y) * stride;
+			byte* psrc = data + (height - 1 - y) * stride;
 			memcpy(pdst, psrc, stride);
 			pdst += stride;
 		}
-		// YUV420PtoRGB(pyuv, img_data.data, width, height, FALSE);
-		m_engine->updateRgb(img_data);
+		pDlg->OnRgbData(rgb);
+	}
+}
+
+void CRealTimeTestDlg::OnRgbData(std::shared_ptr<seeta::ImageData> rgb)
+{
+	m_draw.rects.clear();
+	m_draw.mapPoints.clear();
+	if (m_engine) {
+		m_engine->updateRgb(rgb);
 		int nFace = m_engine->face_size();
 		m_draw.rects.resize(nFace);
 		for (int i = 0; i < nFace; i++)
@@ -267,7 +248,7 @@ void CRealTimeTestDlg::OnRgbData(BYTE* pRgb, int width, int height)
 			}
 			auto points = face->points;
 			if (m_fd68) {
-				points = m_fd68->mark(img_data, face->pos);
+				points = m_fd68->mark(*rgb, face->pos);
 			}
 			for (int i = 0; i < points.size(); i++) {
 				POINT pt{ points[i].x, points[i].y };
@@ -282,7 +263,7 @@ void CRealTimeTestDlg::OnRgbData(BYTE* pRgb, int width, int height)
 		m_nFrame = 0;
 		m_tick = GetTickCount();
 	}
-	m_draw.Draw(pRgb, width, height, strfps);
+	m_draw.Draw(rgb->data, rgb->width, rgb->height, false, strfps);
 }
 
 

@@ -19,7 +19,7 @@ CDrawVideo::~CDrawVideo()
 	DrawDibClose(m_hDib);
 }
 
-void CDrawVideo::Draw(BYTE *pBuffer,int width, int height, LPCTSTR szText)
+void CDrawVideo::Draw(BYTE *pBuffer,int width, int height, BOOL flip, LPCTSTR szText)
 {
 	if(!IsWindow(m_hWnd))
 	{
@@ -63,9 +63,9 @@ void CDrawVideo::Draw(BYTE *pBuffer,int width, int height, LPCTSTR szText)
 	if(pBuffer)
 	{
 		bih.bmiHeader.biWidth = width;
-		bih.bmiHeader.biHeight = height;
+		bih.bmiHeader.biHeight = flip?height:-height;
 		bih.bmiHeader.biSizeImage = width * height * 3;
-		if (m_bUseGDI) {
+		if (m_bUseGDI || !flip) {
 			int oldMode = SetStretchBltMode(hDC, COLORONCOLOR);
 			StretchDIBits(hDC, destRect.left, destRect.top, destRect.Width(), destRect.Height(),
 				0, 0, width, height, pBuffer, &bih, DIB_RGB_COLORS, SRCCOPY);

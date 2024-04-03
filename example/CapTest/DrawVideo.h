@@ -28,7 +28,7 @@ public:
 	BOOL Init(HWND hWnd);
 	void Release() {}
 	//绘制RGB数据  数据长度为width*height*3
-	void Draw(BYTE* pBuf, int width, int height, LPCTSTR szText = NULL);
+	void Draw(BYTE* pBuf, int width, int height, BOOL flip, LPCTSTR szText = NULL);
 };
 
 #endif //AVLIB_DRAWVIDEO_H_

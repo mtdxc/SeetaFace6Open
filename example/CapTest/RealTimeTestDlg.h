@@ -22,7 +22,7 @@ public:
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_REALTIMETEST_DIALOG };
 #endif
-	void OnRgbData(BYTE* pRgb, int with, int heght);
+	void OnRgbData(std::shared_ptr<seeta::ImageData> rgb);
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV 支持
 
@@ -37,7 +37,6 @@ protected:
 	std::unique_ptr<FaceEngine2> m_engine;
 	std::unique_ptr<seeta::FaceLandmarker> m_fd68;
 	seeta::ImageData m_crop;
-	std::string yuv;
 
 	// 生成的消息映射函数
 	virtual BOOL OnInitDialog();

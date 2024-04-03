@@ -66,6 +66,7 @@ bool FaceEngine2::addFaceDb(const char* name, void* rgb, int width, int height) 
 
 bool FaceEngine2::addFaceDb(const char* name, const SeetaImageData& data) {
     if (!fr || !name) return false;
+    std::unique_lock<decltype(face_lock_)> l(face_lock_);
     auto faces = fd->detect(data);
     if (!faces.size) {
         printf("no face!\n");
@@ -84,6 +85,7 @@ bool FaceEngine2::addFaceDb(const char* name, const SeetaImageData& data) {
 
 bool FaceEngine2::delFaceDb(const char* name) {
     bool ret = false;
+    std::unique_lock<decltype(face_lock_)> l(face_lock_);
     auto it = face_db_.find(name);
     if (face_db_.end() != it) {
         face_db_.erase(it);
@@ -98,14 +100,16 @@ void FaceEngine2::updateRgb(void* rgb, int width, int height) {
     data.height = height;
     data.channels = 3;
     data.data = (unsigned char*)rgb;
-    return updateRgb(data);
+    return updateRgb(std::make_shared<seeta::ImageData>(data));
 }
 
-void FaceEngine2::updateRgb(const SeetaImageData& data)
+void FaceEngine2::updateRgb(std::shared_ptr<seeta::ImageData> data)
 {
     if (!fd || !fl5) return;
-    image_ = std::make_shared<seeta::ImageData>(data);
+    if (image_ == data) return;
+    image_ = data;
     faces_.clear();
+    std::unique_lock<decltype(face_lock_)> l(face_lock_);
     auto faces = fd->detect(*image_);
     for (size_t i = 0; i < faces.size; i++)
     {
@@ -117,6 +121,7 @@ void FaceEngine2::updateRgb(const SeetaImageData& data)
             float* features = nullptr;
             if (getFeature(i, &features) && features) {
                 DbInfo& db = fi->db;
+                // std::unique_lock<decltype(face_lock_)> l(face_lock_);
                 for (auto it : face_db_) {
                     float score = fr->CalculateSimilarity(it.second.get(), features);
                     if (score > db.score) {

@@ -1,6 +1,7 @@
 #pragma once
 #include <map>
 #include <memory>
+#include <mutex>
 #include <seeta/FaceDetector.h>
 #include <seeta/FaceLandmarker.h>
 #include <seeta/FaceRecognizer.h>
@@ -46,6 +47,7 @@ class FaceEngine2 {
     std::shared_ptr<seeta::ImageData> image_;
     // ÈËÁ³Êý¾Ý¿â
     std::map<std::string, std::shared_ptr<float>> face_db_;
+    std::mutex face_lock_;
 public:
     FaceEngine2() {}
     bool init(const char* dir, const char* fr_model = "face_recognizer.csta");
@@ -53,7 +55,7 @@ public:
     bool addFaceDb(const char* name, const SeetaImageData& data);
     bool addFaceDb(const char* name, void* rgb, int width, int height);
     bool delFaceDb(const char* name);
-    void updateRgb(const SeetaImageData& data);
+    void updateRgb(std::shared_ptr<seeta::ImageData> data);
     void updateRgb(void* rgb, int width, int height);
     int db_size() const { return face_db_.size(); }
     int face_size() const { return faces_.size(); }
