@@ -17,7 +17,7 @@ set(CMAKE_CFLAGS "${CMAKE_C_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 
 # option for platform
-set(PLATFORM "x64" CACHE STRING "auto, x86 or x64")
+set(PLATFORM "auto" CACHE STRING "auto, x86 or x64")
 set(CONFIGURATION "Debug" CACHE STRING "Debug or Release")
 set(CONFIGURATION "${CMAKE_BUILD_TYPE}")
 

@@ -10,7 +10,7 @@ project(${SeetaPoseEstimation_NAME}${SeetaPoseEstimation_VERSION})
 set(SOLUTION_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 # option for platform
-set(PLATFORM "x64" CACHE STRING "x86 or x64")
+set(PLATFORM "auto" CACHE STRING "auto x86 or x64")
 set(CONFIGURATION "Debug" CACHE STRING "Debug or Release")
 set(CONFIGURATION ${CMAKE_BUILD_TYPE})
 

@@ -37,7 +37,7 @@ set(CMAKE_CFLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden -w")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden -w -std=c++11")
 
 # option for platform
-set(PLATFORM "x64" CACHE STRING "auto, x86 or x64")
+set(PLATFORM "auto" CACHE STRING "auto, x86 or x64")
 set(CONFIGURATION "Debug" CACHE STRING "Debug or Release")
 
 # env
