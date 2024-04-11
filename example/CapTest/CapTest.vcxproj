@@ -206,6 +206,7 @@
     <ClInclude Include="convert.h" />
     <ClInclude Include="DrawVideo.h" />
     <ClInclude Include="FaceEngine.h" />
+    <ClInclude Include="ImgDrawDlg.h" />
     <ClInclude Include="Ini.h" />
     <ClInclude Include="RealTimeTest.h" />
     <ClInclude Include="RealTimeTestDlg.h" />
@@ -224,6 +225,7 @@
     <ClCompile Include="CImageStatic.cpp" />
     <ClCompile Include="convert.cpp" />
     <ClCompile Include="DrawVideo.cc" />
+    <ClCompile Include="ImgDrawDlg.cpp" />
     <ClCompile Include="Ini.cpp" />
     <ClCompile Include="RealTimeTest.cpp" />
     <ClCompile Include="RealTimeTestDlg.cpp" />

@@ -55,6 +55,59 @@ BOOL CImageStatic::SetRGB(void* rgb, int width, int height)
     return 0;
 }
 
+
+int CImageStatic::setFont(LPCTSTR family, int size,
+    bool bItalic, bool bUnderline, bool bStrikeOut)
+{
+    //字体句柄
+/* 自己创建字体
+HFONT hfont = CreateFont(40,     //字体高度
+    0,      //字体宽度,如果给出了高度，宽度给0，自动匹配宽高
+    0,      //文字的倾斜角度 10就表示1度
+    0,      //基线的倾斜角度
+    900,    //笔画的粗细，400以下为细体，700以上为粗体
+    FALSE,   //斜体
+    FALSE,   //有下划线
+    FALSE,   //水平删除线
+    DEFAULT_CHARSET,//GB2312_CHARSET,     //设置字符集
+    OUT_OUTLINE_PRECIS,
+    CLIP_DEFAULT_PRECIS,
+    CLEARTYPE_QUALITY,
+    VARIABLE_PITCH,
+    _T("Impact"));   //字样名，需要在字符集中有才能设定
+*/
+    if (m_hFont) {
+        DeleteObject(m_hFont);
+        m_hFont = nullptr;
+    }
+    m_hFont = CreateFont(size,
+        0, 0, 0, FW_DONTCARE, bItalic, bUnderline, bStrikeOut, DEFAULT_CHARSET, OUT_OUTLINE_PRECIS,
+        CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, VARIABLE_PITCH, family);
+    return m_hFont != nullptr;
+}
+
+int CImageStatic::putText(LPCTSTR text, CRect rc, int flag)
+{
+    if (m_Image.IsNull())
+        return -1;
+    HDC hDC = m_Image.GetDC();
+    //设置文字颜色
+    SetTextColor(hDC, RGB(255, 0, 0));
+    //设置背景颜色
+    SetBkColor(hDC, RGB(255, 255, 0));
+    //设置文字背景模式 
+    //OPAQUE，系统默认，用自身背景色来填充整个背景，TRANSPARENT为透明模式
+    SetBkMode(hDC, TRANSPARENT);
+
+    HGDIOBJ hfontOld = NULL;
+    if (m_hFont) hfontOld = ::SelectObject(hDC, m_hFont);
+    int ret = DrawText(hDC, text, -1, rc, flag);
+    if (hfontOld) SelectObject(hDC, hfontOld);
+    m_Image.ReleaseDC();
+    Invalidate();
+    return ret;
+}
+
 LRESULT CImageStatic::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
     // TODO: 在此添加专用代码和/或调用基类
@@ -97,7 +150,7 @@ LRESULT CImageStatic::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
         }
 
         EndPaint(&ps);
-        return 0;
+        break;
     }
     }
     return CStatic::WindowProc(message, wParam, lParam);

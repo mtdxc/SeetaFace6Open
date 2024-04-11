@@ -5,7 +5,7 @@
 #include "stdafx.h"
 #include "RealTimeTest.h"
 #include "RealTimeTestDlg.h"
-
+#include "ImgDrawDlg.h"
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -68,10 +68,16 @@ BOOL CRealTimeTestApp::InitInstance()
 	// TODO: 应适当修改该字符串，
 	// 例如修改为公司或组织名
 	SetRegistryKey(_T("应用程序向导生成的本地应用程序"));
-
-	CRealTimeTestDlg dlg;
-	m_pMainWnd = &dlg;
-	INT_PTR nResponse = dlg.DoModal();
+	std::auto_ptr<CDialog> dlg;
+	LPCTSTR cmd = GetCommandLine();
+	if (__argc>1) {
+		dlg.reset(new CImgDrawDlg());
+	}
+	else {
+		dlg.reset(new CRealTimeTestDlg());
+	}
+	m_pMainWnd = dlg.get();
+	INT_PTR nResponse = dlg->DoModal();
 	if (nResponse == IDOK)
 	{
 		// TODO: 在此放置处理何时用
