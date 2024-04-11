@@ -4,16 +4,21 @@
 #include "stdafx.h"
 
 #include "stdafx.h"
-#include "CImageStatic.h"
+#include "ImageStatic.h"
 
 // ImageStatic.cpp
 IMPLEMENT_DYNAMIC(CImageStatic, CStatic)
 CImageStatic::CImageStatic()
 {
+    m_hFont = nullptr;
 }
 
 CImageStatic::~CImageStatic()
 {
+    if (m_hFont) {
+        DeleteObject(m_hFont);
+        m_hFont = nullptr;
+    }
 }
 
 
@@ -99,10 +104,16 @@ int CImageStatic::putText(LPCTSTR text, CRect rc, int flag)
     //OPAQUE，系统默认，用自身背景色来填充整个背景，TRANSPARENT为透明模式
     SetBkMode(hDC, TRANSPARENT);
 
-    HGDIOBJ hfontOld = NULL;
-    if (m_hFont) hfontOld = ::SelectObject(hDC, m_hFont);
-    int ret = DrawText(hDC, text, -1, rc, flag);
-    if (hfontOld) SelectObject(hDC, hfontOld);
+    int ret = 0;
+    if (m_hFont) {
+        HGDIOBJ hOld = ::SelectObject(hDC, m_hFont);
+        ret = DrawText(hDC, text, -1, rc, flag);
+        ::SelectObject(hDC, hOld);
+    }
+    else {
+        ret = DrawText(hDC, text, -1, rc, flag);
+        // TextOut(hDC, rc.left, rc.top, text, -1);
+    }
     m_Image.ReleaseDC();
     Invalidate();
     return ret;

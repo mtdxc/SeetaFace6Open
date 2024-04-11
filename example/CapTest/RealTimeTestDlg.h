@@ -7,7 +7,7 @@
 #include <string>
 #include "CaptureVideo.h"
 #include "DrawVideo.h"
-#include "CImageStatic.h"
+#include "ImageStatic.h"
 #include "seeta/FaceLandmarker.h"
 #include <memory>
 class FaceEngine2;
@@ -49,14 +49,15 @@ public:
 	afx_msg void OnBnClickedButtonStartPrev();
 	afx_msg void OnBnClickedButtonReset();
 	afx_msg void OnButtonCheckBox(UINT nID);
+	afx_msg void OnBnClickedButtonAddFace();
+	afx_msg void OnBnClickedButtonDelFace();
+	afx_msg void OnLbnSelchangeListFace();
+
 	CComboBox m_cbDevices;
 	CListBox m_lFaces;
 	CString m_szFaceName;
 	CImageStatic m_imgFace;
 
-	afx_msg void OnBnClickedButtonAddFace();
-	afx_msg void OnBnClickedButtonDelFace();
-	afx_msg void OnLbnSelchangeListFace();
 	BOOL m_bAge;
 	BOOL m_bSex;
 	BOOL m_bEyes;

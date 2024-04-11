@@ -31,7 +31,7 @@ using namespace seeta;
 //这几个没用到
 #pragma comment(lib,"SeetaFaceTracking600.lib") 
 #pragma comment(lib,"SeetaPoseEstimation600.lib")
-#pragma comment(lib,"SeetaQualityAssessor300.lib")
+//#pragma comment(lib,"SeetaQualityAssessor300.lib")
 #endif
 
 ModelSetting FaceEngine2::getSetting(const char* name) {

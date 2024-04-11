@@ -29,10 +29,10 @@ void CImgDrawDlg::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CImgDrawDlg, CDialog)
+	ON_BN_CLICKED(IDC_SAVE_FILE, &CImgDrawDlg::OnBnClickedSaveFile)
 	ON_BN_CLICKED(IDC_SELECT_FILE, &CImgDrawDlg::OnBnClickedSelectFile)
 	ON_BN_CLICKED(IDB_ADD, &CImgDrawDlg::OnBnClickedAdd)
 	ON_WM_SIZE()
-	ON_BN_CLICKED(IDC_SAVE_FILE, &CImgDrawDlg::OnBnClickedSaveFile)
 END_MESSAGE_MAP()
 
 BOOL CImgDrawDlg::OnInitDialog()
